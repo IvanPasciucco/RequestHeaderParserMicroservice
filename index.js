@@ -18,12 +18,44 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+// -----------------------------------------------------------------
+// SOLUCIÓN TIMESTAMP MICROSERVICE
+// -----------------------------------------------------------------
+app.get("/api/:date?", (req, res) => {
+  const dateInput = req.params.date;
+  let date;
+
+  // 1. Si el parámetro está vacío, usar fecha actual
+  if (!dateInput) {
+    date = new Date();
+  } 
+  // 2. Si es un timestamp (solo números), convertir a entero
+  // Comprobamos si NO es NaN (Not a Number)
+  else if (!isNaN(dateInput)) {
+    date = new Date(parseInt(dateInput));
+  } 
+  // 3. Si es formato texto (ISO, fecha normal, etc.)
+  else {
+    date = new Date(dateInput);
+  }
+
+  // 4. Si la fecha es inválida
+  if (date.toString() === "Invalid Date") {
+    return res.json({ error: "Invalid Date" });
+  }
+
+  // 5. Retornar JSON con formatos unix y utc
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString()
+  });
+});
+// -----------------------------------------------------------------
 
 
 // Listen on port set in environment variable or default to 3000
