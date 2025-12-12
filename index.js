@@ -56,7 +56,31 @@ app.get("/api/:date?", (req, res) => {
   });
 });
 // -----------------------------------------------------------------
+// -----------------------------------------------------------------
+// SOLUCIÓN REQUEST HEADER PARSER
+// -----------------------------------------------------------------
 
+app.get('/api/whoami', (req, res) => {
+  // 1. Obtener la IP. 
+  // En servidores como Replit/Glitch/Heroku, la IP real suele estar en 'x-forwarded-for'.
+  // Si no, usamos req.connection.remoteAddress.
+  const ipaddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  // 2. Obtener el idioma del header 'accept-language'
+  const language = req.headers['accept-language'];
+
+  // 3. Obtener el software del header 'user-agent'
+  const software = req.headers['user-agent'];
+
+  // 4. Devolver el JSON
+  res.json({
+    ipaddress: ipaddress,
+    language: language,
+    software: software
+  });
+});
+
+// -----------------------------------------------------------------
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
