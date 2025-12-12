@@ -18,69 +18,30 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-// -----------------------------------------------------------------
-// SOLUCIÓN TIMESTAMP MICROSERVICE
-// -----------------------------------------------------------------
-app.get("/api/:date?", (req, res) => {
-  const dateInput = req.params.date;
-  let date;
-
-  // 1. Si el parámetro está vacío, usar fecha actual
-  if (!dateInput) {
-    date = new Date();
-  } 
-  // 2. Si es un timestamp (solo números), convertir a entero
-  // Comprobamos si NO es NaN (Not a Number)
-  else if (!isNaN(dateInput)) {
-    date = new Date(parseInt(dateInput));
-  } 
-  // 3. Si es formato texto (ISO, fecha normal, etc.)
-  else {
-    date = new Date(dateInput);
+app.get("/api/whoami", function (req, res) {
+  // 1. Obtener la IP:
+  // Intentamos obtener la IP real si hay un proxy (x-forwarded-for)
+  // Si no, usamos la dirección remota directa.
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  
+  // Si la IP viene con varias direcciones (ej: "ip1, ip2"), tomamos solo la primera
+  if (ip && ip.includes(',')) {
+    ip = ip.split(',')[0].trim();
   }
 
-  // 4. Si la fecha es inválida
-  if (date.toString() === "Invalid Date") {
-    return res.json({ error: "Invalid Date" });
-  }
-
-  // 5. Retornar JSON con formatos unix y utc
+  // 2. Responder el JSON exacto que pide el test
   res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString()
+    ipaddress: ip,
+    language: req.headers['accept-language'],
+    software: req.headers['user-agent']
   });
 });
-// -----------------------------------------------------------------
-// -----------------------------------------------------------------
-// SOLUCIÓN REQUEST HEADER PARSER
-// -----------------------------------------------------------------
-
-app.get('/api/whoami', (req, res) => {
-  // 1. Obtener la IP. 
-  // En servidores como Replit/Glitch/Heroku, la IP real suele estar en 'x-forwarded-for'.
-  // Si no, usamos req.connection.remoteAddress.
-  const ipaddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-  // 2. Obtener el idioma del header 'accept-language'
-  const language = req.headers['accept-language'];
-
-  // 3. Obtener el software del header 'user-agent'
-  const software = req.headers['user-agent'];
-
-  // 4. Devolver el JSON
-  res.json({
-    ipaddress: ipaddress,
-    language: language,
-    software: software
-  });
-});
-
-// -----------------------------------------------------------------
 
 // Listen on port set in environment variable or default to 3000
 var listener = app.listen(process.env.PORT || 3000, function () {
